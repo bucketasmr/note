@@ -1,1 +1,42 @@
-
+[
+  {
+    "id": "1",
+    "type": "task",
+    "title": "Купить продукты на неделю",
+    "description": "Молоко, хлеб, свежие овощи, фрукты и сыр.",
+    "date": "2026-10-20",
+    "time": "18:00",
+    "completed": false,
+    "priority": "high",
+    "createdAt": 1792469473735
+  },
+  {
+    "id": "2",
+    "type": "task",
+    "title": "Созвон по проекту с командой",
+    "description": "Обсудить текущий статус и план релизов.",
+    "date": "2026-10-20",
+    "time": "11:30",
+    "completed": false,
+    "priority": "normal",
+    "createdAt": 1792465873735
+  },
+  {
+    "id": "3",
+    "type": "note",
+    "title": "Идеи для отпуска",
+    "description": "Посмотреть билеты в горы, составить список вещей, забронировать отель.",
+    "completed": false,
+    "priority": "normal",
+    "createdAt": 1792386673735
+  },
+  {
+    "id": "4",
+    "type": "note",
+    "title": "Список книг к прочтению",
+    "description": "1. Атомные привычки\n2. Чистый код\n3. Психология влияния",
+    "completed": false,
+    "priority": "low",
+    "createdAt": 1792300273735
+  }
+]
