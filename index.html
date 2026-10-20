@@ -428,7 +428,7 @@
         function checkAuth() {
             if (sessionStorage.getItem('is_authenticated') === 'true') {
                 authModal.classList.add('hidden');
-                loadFromCloud(); // Всегда берем свежие данные из облака при входе
+                loadFromCloud();
             } else {
                 authModal.classList.remove('hidden');
             }
@@ -445,6 +445,7 @@
                 loadFromCloud();
                 showToast('Добро пожаловать!');
             } else {
+                authError.classList.add('hidden');
                 authError.classList.remove('hidden');
                 authPasswordInput.value = '';
             }
@@ -478,7 +479,7 @@
             }
         }
 
-        // Автоматическая загрузка строго из облака GitHub
+        // Автоматическая загрузка из облака GitHub с надежным фоллбэком
         async function loadFromCloud() {
             try {
                 const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE_PATH}?t=` + Date.now();
@@ -495,14 +496,22 @@
                     renderEntries();
                     showToast('Загружено из облака ☁️');
                 } else {
-                    showToast('Не удалось загрузить из облака');
+                    loadEntriesLocal();
                 }
             } catch (e) {
-                showToast('Ошибка соединения с облаком');
+                loadEntriesLocal();
             }
         }
 
-        // Автоматическое сохранение строго в облако GitHub при изменениях
+        // Резервный метод загрузки из локального хранилища браузера, если нет сети
+        function loadEntriesLocal() {
+            const saved = localStorage.getItem('journal_entries');
+            entries = saved ? JSON.parse(saved) : [];
+            renderEntries();
+            showToast('Загружено из локальной памяти');
+        }
+
+        // Ручное сохранение в облако GitHub по кнопке
         async function saveToCloud() {
             const token = ghTokenInput.value.trim();
             if (!token) {
@@ -511,6 +520,7 @@
                 return;
             }
             localStorage.setItem('gh_token', token);
+            localStorage.setItem('journal_entries', JSON.stringify(entries));
 
             showToast('Сохранение в облако... ⏳');
             try {
@@ -534,7 +544,7 @@
                         "Content-Type": "application/json" 
                     },
                     body: JSON.stringify({
-                        message: "Auto update journal entries via web app",
+                        message: "Update journal entries via web app",
                         content: contentEncoded,
                         sha: sha
                     })
@@ -551,10 +561,10 @@
             }
         }
 
-        // Функция фиксации изменений (вызывает автосохранение в облако)
+        // Локальное обновление экрана и сохранение в память браузера
         function commitChanges() {
+            localStorage.setItem('journal_entries', JSON.stringify(entries));
             renderEntries();
-            saveToCloud(); // Автоматически отправляем в облако
         }
 
         function setupEventListeners() {
@@ -684,21 +694,22 @@
             else entries.unshift(newEntry);
 
             closeModal();
-            commitChanges(); // Сохраняем в облако
+            commitChanges();
+            showToast('Изменения сохранены (не забудьте отправить в облако)');
         }
 
         function toggleTaskComplete(id) {
             const item = entries.find(e => e.id === id);
             if (item) { 
                 item.completed = !item.completed; 
-                commitChanges(); // Сохраняем в облако
+                commitChanges(); 
             }
         }
 
         function deleteEntry(id) {
             if (confirm('Удалить запись?')) { 
                 entries = entries.filter(e => e.id !== id); 
-                commitChanges(); // Сохраняем в облако
+                commitChanges(); 
                 showToast('Удалено'); 
             }
         }
