@@ -193,9 +193,9 @@
                 <i class="fa-solid fa-rotate"></i>
                 <span>Обновить из облака</span>
             </button>
-            <button onclick="saveToCloud()" title="Сохранить в репозиторий GitHub" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm font-semibold rounded-lg shadow transition flex items-center justify-center space-x-1.5">
+            <button id="saveCloudBtn" onclick="saveToCloud()" title="Сохранить в репозиторий GitHub" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm font-semibold rounded-lg shadow transition flex items-center justify-center space-x-1.5">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
-                <span>Сохранить в облако</span>
+                <span id="saveCloudBtnText">Сохранить в облако</span>
             </button>
         </div>
     </header>
@@ -383,6 +383,7 @@
         let currentFilter = 'all';
         let searchQuery = '';
         let currentTheme = 'dark';
+        let saveCooldownTimer = null; // Таймер ограничения сохранения
 
         const notebookContent = document.getElementById('notebookContent');
         const emptyState = document.getElementById('emptyState');
@@ -390,6 +391,8 @@
         const clearCompletedBtn = document.getElementById('clearCompletedBtn');
         const searchInput = document.getElementById('searchInput');
         const ghTokenInput = document.getElementById('ghTokenInput');
+        const saveCloudBtn = document.getElementById('saveCloudBtn');
+        const saveCloudBtnText = document.getElementById('saveCloudBtnText');
 
         const authModal = document.getElementById('authModal');
         const authForm = document.getElementById('authForm');
@@ -445,7 +448,6 @@
                 loadFromCloud();
                 showToast('Добро пожаловать!');
             } else {
-                authError.classList.add('hidden');
                 authError.classList.remove('hidden');
                 authPasswordInput.value = '';
             }
@@ -503,7 +505,7 @@
             }
         }
 
-        // Резервный метод загрузки из локального хранилища браузера, если нет сети
+        // Резервный метод загрузки из локального хранилища браузера
         function loadEntriesLocal() {
             const saved = localStorage.getItem('journal_entries');
             entries = saved ? JSON.parse(saved) : [];
@@ -511,8 +513,10 @@
             showToast('Загружено из локальной памяти');
         }
 
-        // Ручное сохранение в облако GitHub по кнопке
+        // Сохранение в облако с защитным интервалом (40 секунд)
         async function saveToCloud() {
+            if (saveCloudBtn.disabled) return; // Защита от повторного клика
+
             const token = ghTokenInput.value.trim();
             if (!token) {
                 alert('Укажите GitHub Token в Настройках для сохранения в облако!');
@@ -552,6 +556,7 @@
 
                 if (putRes.ok) {
                     showToast('Успешно сохранено в облако! 🚀');
+                    startCooldown(40); // Запускаем блокировку на 40 секунд
                 } else {
                     const err = await putRes.json();
                     alert('Ошибка GitHub API: ' + (err.message || 'Не удалось сохранить'));
@@ -559,6 +564,25 @@
             } catch (e) {
                 alert('Ошибка сети: ' + e.message);
             }
+        }
+
+        // Таймер обратного отсчета (40 секунд)
+        function startCooldown(seconds) {
+            let timeLeft = seconds;
+            saveCloudBtn.disabled = true;
+            saveCloudBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            saveCooldownTimer = setInterval(() => {
+                if (timeLeft > 0) {
+                    saveCloudBtnText.textContent = `Подождите (${timeLeft}с)`;
+                    timeLeft--;
+                } else {
+                    clearInterval(saveCooldownTimer);
+                    saveCloudBtn.disabled = false;
+                    saveCloudBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    saveCloudBtnText.textContent = 'Сохранить в облако';
+                }
+            }, 1000);
         }
 
         // Локальное обновление экрана и сохранение в память браузера
