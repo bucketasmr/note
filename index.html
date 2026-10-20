@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Дневник-Блокнот</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Custom typography classes */
+        .font-handwriting {
+            font-family: 'Kalam', 'Caveat', cursive, sans-serif;
+        }
+        .font-sans-ui {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Legal Pad Background Pattern & Lines (Preserved Realistic Yellow Look) */
+        .legal-pad {
+            background-color: #fbf2c4; /* Realistic legal pad yellow */
+            background-image: linear-gradient(#e2d9a6 1px, transparent 1px);
+            background-size: 100% 2rem; /* 32px line spacing matching handwritten scale */
+            line-height: 2rem;
+            position: relative;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Red Vertical Margin Line on Left */
+        .legal-pad::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 52px;
+            width: 2px;
+            border-left: 1px solid #f87171;
+            border-right: 1px solid #f87171;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Top Binder Tape Effect */
+        .binder-head {
+            background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4);
+            border-bottom: 3px dashed #4a5568;
+        }
+
+        /* Checkbox styling */
+        .task-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #854d0e;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        .task-checkbox:checked {
+            background-color: #854d0e;
+            border-color: #854d0e;
+        }
+        .task-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: #fef08a;
+            font-size: 0.9rem;
+            font-weight: bold;
+            top: -3px;
+            left: 2px;
+        }
+
+        /* Completed task visual effect */
+        .completed-text {
+            text-decoration: line-through;
+            color: #854d0e;
+            opacity: 0.65;
+        }
+
+        /* Responsive Margin Adjustment */
+        @media (max-width: 640px) {
+            .legal-pad::before {
+                left: 36px;
+            }
+        }
+
+        /* Theme Styling Rules */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* DARK THEME (DEFAULT) */
+        body.theme-dark {
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc;
+        }
+        body.theme-dark .ui-card {
+            background-color: #1e293b; /* Slate 800 */
+            border-color: #334155;
+            color: #f8fafc;
+        }
+        body.theme-dark .ui-text-muted {
+            color: #94a3b8;
+        }
+        body.theme-dark .modal-bg {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border-color: #475569;
+        }
+
+        /* LIGHT THEME */
+        body.theme-light {
+            background-color: #e7e5e4; /* Stone 200 */
+            color: #1c1917;
+        }
+        body.theme-light .ui-card {
+            background-color: #ffffff;
+            border-color: #d6d3d1;
+            color: #1c1917;
+        }
+        body.theme-light .ui-text-muted {
+            color: #78716c;
+        }
+        body.theme-light .modal-bg {
+            background-color: #fffbeb; /* Light amber */
+            color: #1c1917;
+            border-color: #fcd34d;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1eaaf;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6ca7a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b8ab5d;
+        }
+    </style>
+</head>
+<body class="theme-dark font-sans-ui min-h-screen py-4 md:py-8 px-2 sm:px-4 flex flex-col items-center justify-start">
+
+    <!-- Header & Action Bar -->
+    <header class="ui-card w-full max-w-4xl mb-4 p-4 rounded-xl shadow-lg border flex flex-wrap items-center justify-between gap-3 transition-colors duration-300">
+        <!-- Title & App Info -->
+        <div class="flex items-center space-x-3">
+            <div class="bg-amber-500 text-slate-950 p-2.5 rounded-lg shadow font-bold">
+                <i class="fa-solid fa-book-open text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold leading-tight">Мой Дневник-Блокнот</h1>
+                <p class="ui-text-muted text-xs font-medium">Задачи с датой/временем и свободные заметки</p>
+            </div>
+        </div>
+
+        <!-- Controls: Settings, Import / Export -->
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            <!-- Settings Button -->
+            <button id="openSettingsBtn" title="Настройки оформления" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs sm:text-sm font-semibold rounded-lg shadow transition flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-gear"></i>
+                <span>Настройки</span>
+            </button>
+
+            <!-- Export Button -->
+            <button id="exportBtn" title="Сохранить резервную копию в файл JSON" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-100 text-xs sm:text-sm font-semibold rounded-lg shadow border border-slate-600 transition flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-download text-amber-400"></i>
+                <span>Сохранить в файл</span>
+            </button>
+
+            <!-- Import Label/Button -->
+            <label id="importLabel" title="Загрузить дневник из JSON файла" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-100 text-xs sm:text-sm font-semibold rounded-lg shadow border border-slate-600 cursor-pointer transition flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-upload text-amber-400"></i>
+                <span>Загрузить из файла</span>
+                <input type="file" id="importInput" accept=".json" class="hidden">
+            </label>
+        </div>
+    </header>
+
+    <!-- Main Notebook Container -->
+    <main class="w-full max-w-4xl flex-grow flex flex-col">
+        <!-- Binder Head (Top Black Strip) -->
+        <div class="binder-head h-10 w-full rounded-t-xl flex items-center justify-between px-6">
+            <div class="flex space-x-3">
+                <span class="w-3 h-3 rounded-full bg-stone-600 inline-block border border-stone-800"></span>
+                <span class="w-3 h-3 rounded-full bg-stone-600 inline-block border border-stone-800"></span>
+                <span class="w-3 h-3 rounded-full bg-stone-600 inline-block border border-stone-800"></span>
+            </div>
+            <div class="text-xs text-stone-400 font-mono tracking-widest uppercase">Жёлтый Блокнот №1</div>
+            <div class="flex space-x-3">
+                <span class="w-3 h-3 rounded-full bg-stone-600 inline-block border border-stone-800"></span>
+                <span class="w-3 h-3 rounded-full bg-stone-600 inline-block border border-stone-800"></span>
+            </div>
+        </div>
+
+        <!-- Legal Pad Body -->
+        <div class="legal-pad flex-grow w-full rounded-b-xl p-4 sm:p-6 sm:pl-16 pl-12 min-h-[680px] border-x border-b border-amber-300/60 text-stone-900">
+
+            <!-- Control Bar Inside Notebook -->
+            <div class="mb-6 pt-2 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between border-b-2 border-stone-400/40 pb-4">
+                
+                <!-- Create Entry Buttons -->
+                <div class="flex items-center gap-2">
+                    <button id="openTaskModalBtn" class="px-4 py-2 bg-amber-800 hover:bg-amber-900 text-amber-50 font-bold text-sm rounded-lg shadow flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-square-plus"></i>
+                        <span>+ Новая Задача</span>
+                    </button>
+                    <button id="openNoteModalBtn" class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-400 font-bold text-sm rounded-lg shadow-sm flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-note-sticky"></i>
+                        <span>+ Новая Заметка</span>
+                    </button>
+                </div>
+
+                <!-- Tabs & Search -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- Filter Tabs -->
+                    <div class="inline-flex rounded-lg bg-amber-200/70 p-1 border border-amber-400/50 text-xs sm:text-sm font-semibold">
+                        <button data-tab="all" class="tab-btn px-3 py-1.5 rounded-md transition active-tab bg-white text-stone-900 shadow-sm">Все</button>
+                        <button data-tab="tasks" class="tab-btn px-3 py-1.5 rounded-md transition text-stone-700 hover:text-stone-900">Задачи</button>
+                        <button data-tab="notes" class="tab-btn px-3 py-1.5 rounded-md transition text-stone-700 hover:text-stone-900">Заметки</button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative flex-grow sm:flex-grow-0">
+                        <input type="text" id="searchInput" placeholder="Поиск..." class="w-full sm:w-44 pl-8 pr-3 py-1.5 text-sm bg-white/90 border border-amber-400/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 focus:bg-white text-stone-900">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-stone-500 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div id="statsBar" class="mb-4 text-xs font-semibold text-amber-950 flex items-center justify-between px-1">
+                <span id="statsCount">Загрузка записей...</span>
+                <button id="clearCompletedBtn" class="text-amber-900 hover:text-red-700 underline text-xs hidden">Очистить выполненные</button>
+            </div>
+
+            <!-- Main Content List (Tasks & Notes) -->
+            <div id="notebookContent" class="space-y-6">
+                <!-- Entries rendered dynamically via JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden py-16 text-center text-stone-600">
+                <i class="fa-solid fa-pen-nib text-4xl mb-3 text-amber-800/40"></i>
+                <p class="text-lg font-handwriting font-bold text-amber-950">Блокнот пуст</p>
+                <p class="text-xs text-stone-600 mt-1">Добавьте первую задачу или заметку с помощью кнопок выше.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer Info -->
+    <footer class="mt-6 text-center text-xs ui-text-muted transition-colors duration-300">
+        <p>Данные сохраняются в вашем браузере (LocalStorage).</p>
+    </footer>
+
+    <!-- MODAL: Settings ⚙️ -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="modal-bg rounded-2xl shadow-2xl border w-full max-w-md overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-amber-500 text-slate-950 px-6 py-4 flex items-center justify-between font-bold">
+                <h3 class="text-lg flex items-center space-x-2">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Настройки</span>
+                </h3>
+                <button id="closeSettingsModalBtn" class="text-slate-950 hover:opacity-75 text-2xl font-bold leading-none">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider mb-2 opacity-90">Тема оформления интерфейса</label>
+                    <p class="text-xs opacity-75 mb-4">Выберите тему фонового пространства вокруг жёлтого блокнота:</p>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Dark Theme Switch Option -->
+                        <button type="button" id="setThemeDark" class="flex flex-col items-center justify-center p-4 rounded-xl border-2 transition text-center space-y-2">
+                            <div class="w-full h-10 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-amber-400">
+                                <i class="fa-solid fa-moon text-lg"></i>
+                            </div>
+                            <span class="text-xs font-bold">Тёмная тема</span>
+                        </button>
+
+                        <!-- Light Theme Switch Option -->
+                        <button type="button" id="setThemeLight" class="flex flex-col items-center justify-center p-4 rounded-xl border-2 transition text-center space-y-2">
+                            <div class="w-full h-10 rounded-lg bg-stone-200 border border-stone-300 flex items-center justify-center text-amber-700">
+                                <i class="fa-solid fa-sun text-lg"></i>
+                            </div>
+                            <span class="text-xs font-bold">Светлая тема</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs leading-relaxed opacity-90 flex items-start space-x-2">
+                    <i class="fa-solid fa-circle-info text-amber-500 mt-0.5"></i>
+                    <span>Жёлтый блокнот всегда остаётся реалистичным и удобным для чтения записей.</span>
+                </div>
+
+                <div class="flex items-center justify-end pt-2 border-t border-amber-500/20">
+                    <button type="button" id="saveSettingsBtn" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow transition">
+                        Готово
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Add / Edit Entry -->
+    <div id="entryModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-amber-50 text-stone-900 rounded-2xl shadow-2xl border-2 border-amber-300 w-full max-w-lg overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-amber-200/90 px-6 py-4 border-b border-amber-300 flex items-center justify-between">
+                <h3 id="modalTitle" class="text-lg font-bold text-amber-950 flex items-center space-x-2">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Новая запись</span>
+                </h3>
+                <button id="closeModalBtn" class="text-stone-600 hover:text-stone-950 text-2xl font-bold leading-none">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="entryForm" class="p-6 space-y-4">
+                <input type="hidden" id="entryId">
+                <input type="hidden" id="entryType" value="task">
+
+                <!-- Type Selector Tabs -->
+                <div class="flex rounded-lg bg-amber-200/60 p-1 border border-amber-300">
+                    <button type="button" id="typeTaskBtn" class="flex-1 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-amber-950">
+                        <i class="fa-solid fa-list-check mr-1"></i> Задача (с датой)
+                    </button>
+                    <button type="button" id="typeNoteBtn" class="flex-1 py-1.5 text-xs font-bold rounded-md text-stone-700 hover:text-stone-950">
+                        <i class="fa-solid fa-sticky-note mr-1"></i> Заметка (без даты)
+                    </button>
+                </div>
+
+                <!-- Title Input -->
+                <div>
+                    <label class="block text-xs font-bold text-amber-950 uppercase tracking-wider mb-1">Заголовок / Текст *</label>
+                    <input type="text" id="inputTitle" required placeholder="Например: Записаться к врачу" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 text-sm">
+                </div>
+
+                <!-- Date & Time Row (For Tasks) -->
+                <div id="datetimeFields" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-amber-950 uppercase tracking-wider mb-1">Дата *</label>
+                        <input type="date" id="inputDate" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-amber-950 uppercase tracking-wider mb-1">Время</label>
+                        <input type="time" id="inputTime" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 text-sm">
+                    </div>
+                </div>
+
+                <!-- Description / Note Body -->
+                <div>
+                    <label class="block text-xs font-bold text-amber-950 uppercase tracking-wider mb-1">Подробности / Описание</label>
+                    <textarea id="inputDescription" rows="3" placeholder="Дополнительные детали..." class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 text-sm font-handwriting text-base"></textarea>
+                </div>
+
+                <!-- Priority (For Tasks) -->
+                <div id="priorityField">
+                    <label class="block text-xs font-bold text-amber-950 uppercase tracking-wider mb-1">Приоритет</label>
+                    <select id="inputPriority" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 text-sm">
+                        <option value="normal">Обычный</option>
+                        <option value="high">🔥 Высокий / Важно</option>
+                        <option value="low">🔹 Низкий</option>
+                    </select>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-end space-x-3 pt-3 border-t border-amber-200">
+                    <button type="button" id="cancelModalBtn" class="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold rounded-lg transition">Отмена</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-800 hover:bg-amber-900 text-white text-xs font-bold rounded-lg shadow transition">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl text-xs font-medium flex items-center space-x-2 border border-slate-700 transition-opacity duration-300 opacity-0 pointer-events-none z-50">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-green-400"></i>
+        <span id="toastMsg">Уведомление</span>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // Sample initial data if local storage is empty
+        const defaultEntries = [
+            {
+                id: '1',
+                type: 'task',
+                title: 'Купить продукты на неделю',
+                description: 'Молоко, хлеб, свежие овощи, фрукты и сыр.',
+                date: new Date().toISOString().split('T')[0], // Today
+                time: '18:00',
+                completed: false,
+                priority: 'high',
+                createdAt: Date.now() - 3600000
+            },
+            {
+                id: '2',
+                type: 'task',
+                title: 'Созвон по проекту с командой',
+                description: 'Обсудить текущий статус и план релизов.',
+                date: new Date().toISOString().split('T')[0], // Today
+                time: '11:30',
+                completed: true,
+                priority: 'normal',
+                createdAt: Date.now() - 7200000
+            },
+            {
+                id: '3',
+                type: 'note',
+                title: 'Идеи для отпуска',
+                description: 'Посмотреть билеты в горы, составить список вещей, забронировать отель.',
+                completed: false,
+                priority: 'normal',
+                createdAt: Date.now() - 86400000
+            },
+            {
+                id: '4',
+                type: 'note',
+                title: 'Список книг к прочтению',
+                description: '1. Атомные привычки\n2. Чистый код\n3. Психология влияния',
+                completed: false,
+                priority: 'low',
+                createdAt: Date.now() - 172800000
+            }
+        ];
+
+        // State Management
+        let entries = [];
+        let currentFilter = 'all'; // 'all', 'tasks', 'notes'
+        let searchQuery = '';
+        let currentTheme = 'dark'; // DEFAULT: DARK THEME
+
+        // DOM Elements
+        const notebookContent = document.getElementById('notebookContent');
+        const emptyState = document.getElementById('emptyState');
+        const statsCount = document.getElementById('statsCount');
+        const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+        const searchInput = document.getElementById('searchInput');
+
+        // Entry Modal Elements
+        const entryModal = document.getElementById('entryModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const entryForm = document.getElementById('entryForm');
+        const entryIdInput = document.getElementById('entryId');
+        const entryTypeInput = document.getElementById('entryType');
+        const typeTaskBtn = document.getElementById('typeTaskBtn');
+        const typeNoteBtn = document.getElementById('typeNoteBtn');
+        const inputTitle = document.getElementById('inputTitle');
+        const inputDate = document.getElementById('inputDate');
+        const inputTime = document.getElementById('inputTime');
+        const datetimeFields = document.getElementById('datetimeFields');
+        const inputDescription = document.getElementById('inputDescription');
+        const inputPriority = document.getElementById('inputPriority');
+        const priorityField = document.getElementById('priorityField');
+
+        // Settings Elements
+        const settingsModal = document.getElementById('settingsModal');
+        const openSettingsBtn = document.getElementById('openSettingsBtn');
+        const closeSettingsModalBtn = document.getElementById('closeSettingsModalBtn');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const setThemeDark = document.getElementById('setThemeDark');
+        const setThemeLight = document.getElementById('setThemeLight');
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadEntries();
+            setupEventListeners();
+            renderEntries();
+        });
+
+        // Theme Initialization & Management
+        function initTheme() {
+            // Requirement: Dark Theme by Default
+            const savedTheme = localStorage.getItem('theme_preference');
+            if (savedTheme === 'light') {
+                applyTheme('light');
+            } else {
+                applyTheme('dark'); // Default
+            }
+        }
+
+        function applyTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem('theme_preference', theme);
+
+            if (theme === 'dark') {
+                document.body.classList.remove('theme-light');
+                document.body.classList.add('theme-dark');
+            } else {
+                document.body.classList.remove('theme-dark');
+                document.body.classList.add('theme-light');
+            }
+            updateSettingsUI();
+        }
+
+        function updateSettingsUI() {
+            if (currentTheme === 'dark') {
+                setThemeDark.className = "flex flex-col items-center justify-center p-4 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-center space-y-2";
+                setThemeLight.className = "flex flex-col items-center justify-center p-4 rounded-xl border-2 border-stone-500/30 hover:border-amber-500/50 text-center space-y-2 opacity-70 hover:opacity-100";
+            } else {
+                setThemeLight.className = "flex flex-col items-center justify-center p-4 rounded-xl border-2 border-amber-600 bg-amber-600/10 text-center space-y-2";
+                setThemeDark.className = "flex flex-col items-center justify-center p-4 rounded-xl border-2 border-stone-500/30 hover:border-amber-600/50 text-center space-y-2 opacity-70 hover:opacity-100";
+            }
+        }
+
+        // Load data from LocalStorage
+        function loadEntries() {
+            const saved = localStorage.getItem('journal_entries');
+            if (saved) {
+                try {
+                    entries = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Failed to parse saved entries", e);
+                    entries = [...defaultEntries];
+                }
+            } else {
+                entries = [...defaultEntries];
+                saveEntries();
+            }
+        }
+
+        // Save data to LocalStorage
+        function saveEntries() {
+            localStorage.setItem('journal_entries', JSON.stringify(entries));
+            renderEntries();
+        }
+
+        // Event Listeners Setup
+        function setupEventListeners() {
+            // Settings Modal Openers & Handlers
+            openSettingsBtn.addEventListener('click', () => {
+                updateSettingsUI();
+                settingsModal.classList.remove('hidden');
+            });
+            closeSettingsModalBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+            saveSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+
+            setThemeDark.addEventListener('click', () => {
+                applyTheme('dark');
+                showToast('Включена тёмная тема');
+            });
+
+            setThemeLight.addEventListener('click', () => {
+                applyTheme('light');
+                showToast('Включена светлая тема');
+            });
+
+            // Entry Modal Controls
+            document.getElementById('openTaskModalBtn').addEventListener('click', () => openModal('task'));
+            document.getElementById('openNoteModalBtn').addEventListener('click', () => openModal('note'));
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+
+            typeTaskBtn.addEventListener('click', () => setModalType('task'));
+            typeNoteBtn.addEventListener('click', () => setModalType('note'));
+
+            entryForm.addEventListener('submit', handleFormSubmit);
+
+            // Filter Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tab-btn').forEach(b => {
+                        b.classList.remove('active-tab', 'bg-white', 'text-stone-900', 'shadow-sm');
+                        b.classList.add('text-stone-700');
+                    });
+                    e.target.classList.add('active-tab', 'bg-white', 'text-stone-900', 'shadow-sm');
+                    currentFilter = e.target.dataset.tab;
+                    renderEntries();
+                });
+            });
+
+            // Search Filter
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase().trim();
+                renderEntries();
+            });
+
+            // Clear Completed Tasks
+            clearCompletedBtn.addEventListener('click', () => {
+                if (confirm('Удалить все выполненные задачи?')) {
+                    entries = entries.filter(item => !(item.type === 'task' && item.completed));
+                    saveEntries();
+                    showToast('Выполненные задачи очищены');
+                }
+            });
+
+            // Export JSON
+            document.getElementById('exportBtn').addEventListener('click', exportToJsonFile);
+
+            // Import JSON
+            document.getElementById('importInput').addEventListener('change', importFromJsonFile);
+        }
+
+        // Modal Handling
+        function openModal(type = 'task', editId = null) {
+            entryForm.reset();
+            if (editId) {
+                const item = entries.find(e => e.id === editId);
+                if (!item) return;
+
+                modalTitle.querySelector('span').textContent = 'Редактировать запись';
+                entryIdInput.value = item.id;
+                inputTitle.value = item.title || '';
+                inputDescription.value = item.description || '';
+                inputPriority.value = item.priority || 'normal';
+                
+                if (item.type === 'task') {
+                    setModalType('task');
+                    inputDate.value = item.date || '';
+                    inputTime.value = item.time || '';
+                } else {
+                    setModalType('note');
+                }
+            } else {
+                modalTitle.querySelector('span').textContent = type === 'task' ? 'Новая Задача' : 'Новая Заметка';
+                entryIdInput.value = '';
+                const today = new Date().toISOString().split('T')[0];
+                inputDate.value = today;
+                setModalType(type);
+            }
+
+            entryModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            entryModal.classList.add('hidden');
+        }
+
+        function setModalType(type) {
+            entryTypeInput.value = type;
+            if (type === 'task') {
+                typeTaskBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-amber-950";
+                typeNoteBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-md text-stone-700 hover:text-stone-950";
+                datetimeFields.classList.remove('hidden');
+                priorityField.classList.remove('hidden');
+                inputDate.required = true;
+            } else {
+                typeNoteBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-amber-950";
+                typeTaskBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-md text-stone-700 hover:text-stone-950";
+                datetimeFields.classList.add('hidden');
+                priorityField.classList.add('hidden');
+                inputDate.required = false;
+            }
+        }
+
+        // Form Submission
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const id = entryIdInput.value || Date.now().toString();
+            const type = entryTypeInput.value;
+            const title = inputTitle.value.trim();
+            const description = inputDescription.value.trim();
+
+            if (!title) return;
+
+            const existingIndex = entries.findIndex(e => e.id === id);
+
+            const newEntry = {
+                id,
+                type,
+                title,
+                description,
+                createdAt: existingIndex >= 0 ? entries[existingIndex].createdAt : Date.now()
+            };
+
+            if (type === 'task') {
+                newEntry.date = inputDate.value;
+                newEntry.time = inputTime.value;
+                newEntry.priority = inputPriority.value;
+                newEntry.completed = existingIndex >= 0 ? entries[existingIndex].completed : false;
+            } else {
+                newEntry.completed = false;
+            }
+
+            if (existingIndex >= 0) {
+                entries[existingIndex] = newEntry;
+                showToast('Запись обновлена');
+            } else {
+                entries.unshift(newEntry);
+                showToast('Запись добавлена');
+            }
+
+            saveEntries();
+            closeModal();
+        }
+
+        // Toggle Task Completion
+        function toggleTaskComplete(id) {
+            const item = entries.find(e => e.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                saveEntries();
+            }
+        }
+
+        // Delete Single Entry
+        function deleteEntry(id) {
+            if (confirm('Удалить эту запись?')) {
+                entries = entries.filter(e => e.id !== id);
+                saveEntries();
+                showToast('Запись удалена');
+            }
+        }
+
+        // Date Helpers
+        function formatDateHeader(dateStr) {
+            if (!dateStr) return 'Без даты';
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+            if (dateStr === todayStr) return 'Сегодня (' + formatDateRussian(dateStr) + ')';
+            if (dateStr === tomorrowStr) return 'Завтра (' + formatDateRussian(dateStr) + ')';
+
+            return formatDateRussian(dateStr);
+        }
+
+        function formatDateRussian(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+            return dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        // Render Notebook Entries
+        function renderEntries() {
+            notebookContent.innerHTML = '';
+
+            // Filtering
+            let filtered = entries.filter(item => {
+                if (currentFilter === 'tasks' && item.type !== 'task') return false;
+                if (currentFilter === 'notes' && item.type !== 'note') return false;
+
+                if (searchQuery) {
+                    const matchTitle = item.title.toLowerCase().includes(searchQuery);
+                    const matchDesc = item.description ? item.description.toLowerCase().includes(searchQuery) : false;
+                    return matchTitle || matchDesc;
+                }
+
+                return true;
+            });
+
+            // Update Stats
+            const totalTasks = entries.filter(e => e.type === 'task').length;
+            const completedTasks = entries.filter(e => e.type === 'task' && e.completed).length;
+            const totalNotes = entries.filter(e => e.type === 'note').length;
+
+            statsCount.textContent = `Задач: ${completedTasks}/${totalTasks} выполнено • Заметок: ${totalNotes}`;
+            if (completedTasks > 0) {
+                clearCompletedBtn.classList.remove('hidden');
+            } else {
+                clearCompletedBtn.classList.add('hidden');
+            }
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            const tasks = filtered.filter(e => e.type === 'task');
+            const notes = filtered.filter(e => e.type === 'note');
+
+            // Group tasks by date
+            const groupedTasks = {};
+            tasks.forEach(task => {
+                const d = task.date || '9999-12-31';
+                if (!groupedTasks[d]) groupedTasks[d] = [];
+                groupedTasks[d].push(task);
+            });
+
+            const sortedDates = Object.keys(groupedTasks).sort();
+
+            // Render Tasks Grouped by Date
+            if (sortedDates.length > 0) {
+                sortedDates.forEach(dateKey => {
+                    const groupContainer = document.createElement('div');
+                    groupContainer.className = 'mb-6';
+
+                    const header = document.createElement('div');
+                    header.className = 'flex items-center space-x-2 pb-1 mb-2 border-b-2 border-amber-900/30 text-amber-950 font-bold';
+                    header.innerHTML = `
+                        <i class="fa-regular fa-calendar-days text-amber-900"></i>
+                        <span class="text-sm uppercase tracking-wider font-sans-ui">${formatDateHeader(dateKey)}</span>
+                    `;
+                    groupContainer.appendChild(header);
+
+                    const itemsList = document.createElement('div');
+                    itemsList.className = 'space-y-1';
+
+                    groupedTasks[dateKey].forEach(task => {
+                        itemsList.appendChild(createTaskElement(task));
+                    });
+
+                    groupContainer.appendChild(itemsList);
+                    notebookContent.appendChild(groupContainer);
+                });
+            }
+
+            // Render Notes Section
+            if (notes.length > 0 && (currentFilter === 'all' || currentFilter === 'notes')) {
+                const notesContainer = document.createElement('div');
+                notesContainer.className = 'mt-8';
+
+                const notesHeader = document.createElement('div');
+                notesHeader.className = 'flex items-center space-x-2 pb-1 mb-3 border-b-2 border-amber-900/30 text-amber-950 font-bold';
+                notesHeader.innerHTML = `
+                    <i class="fa-solid fa-note-sticky text-amber-900"></i>
+                    <span class="text-sm uppercase tracking-wider font-sans-ui">Заметки / Идеи (Без даты)</span>
+                `;
+                notesContainer.appendChild(notesHeader);
+
+                const notesGrid = document.createElement('div');
+                notesGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-3';
+
+                notes.forEach(note => {
+                    notesGrid.appendChild(createNoteElement(note));
+                });
+
+                notesContainer.appendChild(notesGrid);
+                notebookContent.appendChild(notesContainer);
+            }
+        }
+
+        // Create Task DOM Node
+        function createTaskElement(task) {
+            const div = document.createElement('div');
+            div.className = `group flex items-start justify-between p-2 rounded-lg hover:bg-amber-300/30 transition border-b border-amber-900/10 ${task.completed ? 'opacity-70' : ''}`;
+
+            const priorityBadge = task.priority === 'high' ? '<span class="text-xs text-red-700 font-bold ml-2">🔥 важная</span>' : '';
+
+            div.innerHTML = `
+                <div class="flex items-start space-x-3 flex-grow pr-2 min-w-0">
+                    <input type="checkbox" class="task-checkbox mt-1 flex-shrink-0" ${task.completed ? 'checked' : ''} onchange="toggleTaskComplete('${task.id}')">
+                    <div class="min-w-0 flex-grow">
+                        <div class="flex items-center flex-wrap gap-x-2 leading-tight">
+                            <span class="font-handwriting text-xl font-bold ${task.completed ? 'completed-text' : 'text-stone-900'}">
+                                ${escapeHtml(task.title)}
+                            </span>
+                            ${task.time ? `<span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-200/80 text-amber-950 font-sans-ui"><i class="fa-regular fa-clock text-3xs mr-1"></i>${task.time}</span>` : ''}
+                            ${priorityBadge}
+                        </div>
+                        ${task.description ? `<p class="text-stone-800 text-base font-handwriting mt-0.5 leading-snug ${task.completed ? 'line-through opacity-60' : ''}">${escapeHtml(task.description)}</p>` : ''}
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <button onclick="openModal('task', '${task.id}')" class="p-1.5 text-stone-700 hover:text-amber-950 rounded hover:bg-amber-200/60" title="Редактировать">
+                        <i class="fa-solid fa-pen text-xs"></i>
+                    </button>
+                    <button onclick="deleteEntry('${task.id}')" class="p-1.5 text-stone-700 hover:text-red-700 rounded hover:bg-amber-200/60" title="Удалить">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+            `;
+            return div;
+        }
+
+        // Create Note DOM Node
+        function createNoteElement(note) {
+            const div = document.createElement('div');
+            div.className = 'group relative p-3 rounded-xl bg-amber-100/90 border border-amber-300/80 shadow-sm hover:shadow transition flex flex-col justify-between';
+
+            div.innerHTML = `
+                <div>
+                    <div class="flex items-start justify-between gap-2 mb-1">
+                        <h4 class="font-handwriting font-bold text-xl text-stone-950 leading-tight">${escapeHtml(note.title)}</h4>
+                        <div class="flex items-center space-x-1 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="openModal('note', '${note.id}')" class="p-1 text-stone-700 hover:text-amber-950" title="Редактировать">
+                                <i class="fa-solid fa-pen text-xs"></i>
+                            </button>
+                            <button onclick="deleteEntry('${note.id}')" class="p-1 text-stone-700 hover:text-red-700" title="Удалить">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    ${note.description ? `<p class="text-stone-800 font-handwriting text-base leading-relaxed whitespace-pre-wrap">${escapeHtml(note.description)}</p>` : ''}
+                </div>
+                <div class="mt-3 pt-2 border-t border-amber-300/60 flex items-center justify-between text-3xs text-stone-600 font-sans-ui">
+                    <span>Заметка</span>
+                    <span>${new Date(note.createdAt).toLocaleDateString('ru-RU')}</span>
+                </div>
+            `;
+            return div;
+        }
+
+        // Export JSON
+        function exportToJsonFile() {
+            if (entries.length === 0) {
+                showToast('Нет данных для сохранения', 'warning');
+                return;
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(entries, null, 2));
+            const downloadAnchor = document.createElement('a');
+            const fileName = `journal_backup_${new Date().toISOString().split('T')[0]}.json`;
+
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", fileName);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            showToast('Файл успешно сохранён!');
+        }
+
+        // Import JSON
+        function importFromJsonFile(event) {
+            const fileReader = new FileReader();
+            const file = event.target.files[0];
+
+            if (!file) return;
+
+            fileReader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        if (confirm(`Загрузить ${importedData.length} записей из файла? Записи будут объединены.`)) {
+                            const map = new Map();
+                            entries.forEach(item => map.set(item.id, item));
+                            importedData.forEach(item => {
+                                if (item.id && item.title) {
+                                    map.set(item.id, item);
+                                }
+                            });
+                            entries = Array.from(map.values());
+                            saveEntries();
+                            showToast('Данные успешно загружены!');
+                        }
+                    } else {
+                        alert('Неверный формат файла JSON.');
+                    }
+                } catch (error) {
+                    alert('Ошибка при чтении файла JSON: ' + error.message);
+                }
+                event.target.value = '';
+            };
+
+            fileReader.readAsText(file);
+        }
+
+        // HTML Sanitizer
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Toast Messages
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.textContent = message;
+            if (type === 'warning') {
+                toastIcon.className = 'fa-solid fa-triangle-exclamation text-amber-400';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-check text-green-400';
+            }
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
