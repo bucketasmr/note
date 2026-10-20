@@ -481,38 +481,29 @@
             }
         }
 
-        // Загрузка из облака с добавлением случайного числа против кэша iOS
+        // Загрузка строго из облака через прокси (без тихого падения в локальную память)
         async function loadFromCloud() {
             try {
-                // Используем корректную прямую ссылку на сырой файл (raw)
-                const randomId = Math.random().toString(36).substring(7);
-                const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE_PATH}?t=` + Date.now() + `&r=` + randomId;
+                showToast('Загрузка из OLD CLOUD... ⏳');
+                const targetUrl = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE_PATH}?t=` + Date.now();
+                const proxyUrl = `https://api.allorigins.win/get?url=` + encodeURIComponent(targetUrl);
                 
-                const res = await fetch(url, { 
-                    cache: "no-store",
-                    headers: {
-                        "Cache-Control": "no-cache, no-store, must-revalidate",
-                        "Pragma": "no-cache",
-                        "Expires": "0"
-                    }
-                });
+                const res = await fetch(proxyUrl, { cache: "no-store" });
                 if (res.ok) {
-                    entries = await res.json();
-                    renderEntries();
-                    showToast('Загружено из облака ☁️');
-                } else {
-                    loadEntriesLocal();
+                    const data = await res.json();
+                    if (data && data.contents) {
+                        entries = JSON.parse(data.contents);
+                        // Сохраняем в память устройства только ПОСЛЕ успешной скачки с облака
+                        localStorage.setItem('journal_entries', JSON.stringify(entries));
+                        renderEntries();
+                        showToast('Загружено из облака ☁️');
+                        return;
+                    }
                 }
+                alert('Не удалось получить данные из облака.');
             } catch (e) {
-                loadEntriesLocal();
+                alert('Ошибка соединения с облаком: ' + e.message);
             }
-        }
-
-        function loadEntriesLocal() {
-            const saved = localStorage.getItem('journal_entries');
-            entries = saved ? JSON.parse(saved) : [];
-            renderEntries();
-            showToast('Загружено из локальной памяти');
         }
 
         // Сохранение в облако с защитным интервалом (40 секунд)
