@@ -481,28 +481,39 @@
             }
         }
 
-        // Загрузка строго из облака через прокси (без тихого падения в локальную память)
+        // Загрузка строго через официальный GitHub API (работает на ПК и iOS без сбоев)
         async function loadFromCloud() {
             try {
                 showToast('Загрузка из OLD CLOUD... ⏳');
-                const targetUrl = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE_PATH}?t=` + Date.now();
-                const proxyUrl = `https://api.allorigins.win/get?url=` + encodeURIComponent(targetUrl);
-                
-                const res = await fetch(proxyUrl, { cache: "no-store" });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.contents) {
-                        entries = JSON.parse(data.contents);
-                        // Сохраняем в память устройства только ПОСЛЕ успешной скачки с облака
-                        localStorage.setItem('journal_entries', JSON.stringify(entries));
-                        renderEntries();
-                        showToast('Загружено из облака ☁️');
-                        return;
-                    }
+                const token = ghTokenInput.value.trim();
+                const headers = { "Accept": "application/vnd.github.v3+json" };
+                if (token) {
+                    headers["Authorization"] = `token ${token}`;
                 }
-                alert('Не удалось получить данные из облака.');
+
+                const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}?t=` + Date.now(), {
+                    headers: headers,
+                    cache: "no-store"
+                });
+
+                if (res.ok) {
+                    const fileData = await res.json();
+                    // Декодируем Base64 контент из GitHub API в читаемый текст (поддерживает кириллицу)
+                    const jsonString = decodeURIComponent(escape(atob(fileData.content)));
+                    entries = JSON.parse(jsonString);
+                    
+                    localStorage.setItem('journal_entries', JSON.stringify(entries));
+                    renderEntries();
+                    showToast('Загружено из облака ☁️');
+                } else {
+                    throw new Error('Ошибка ответа GitHub API');
+                }
             } catch (e) {
-                alert('Ошибка соединения с облаком: ' + e.message);
+                // Если нет токена или ошибка API, берем из локальной памяти как резерв
+                const saved = localStorage.getItem('journal_entries');
+                entries = saved ? JSON.parse(saved) : [];
+                renderEntries();
+                showToast('Загружено из локальной памяти');
             }
         }
 
@@ -809,7 +820,7 @@
 
         function createNoteElement(note) {
             const div = document.createElement('div');
-            div.className = 'group relative p-3 rounded-xl bg-amber-100/90 border border-amber-300 shadow-sm flex flex-col justify-between';
+            div.className = 'group relative p-3 rounded-xl bg-100/90 border border-amber-300 shadow-sm flex flex-col justify-between';
             div.innerHTML = `
                 <div>
                     <div class="flex items-start justify-between gap-2 mb-1">
