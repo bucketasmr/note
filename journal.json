@@ -1,26 +1,46 @@
 [
   {
-    "id": "1792479761510",
-    "type": "note",
-    "title": "Побриться",
+    "id": "1792480901748",
+    "type": "task",
+    "title": "Починить стик джойстика",
     "description": "",
-    "createdAt": 1792479761510,
+    "createdAt": 1792480901748,
+    "date": "2026-10-21",
+    "time": "",
+    "priority": "normal",
     "completed": false
   },
   {
-    "id": "1792479747267",
-    "type": "note",
-    "title": "Душ",
-    "description": "",
-    "createdAt": 1792479747267,
-    "completed": false
-  },
-  {
-    "id": "1792479738763",
-    "type": "note",
+    "id": "1792480865235",
+    "type": "task",
     "title": "Помыть Голову",
     "description": "",
-    "createdAt": 1792479738763,
+    "createdAt": 1792480865235,
+    "date": "2026-10-20",
+    "time": "",
+    "priority": "normal",
+    "completed": false
+  },
+  {
+    "id": "1792480840269",
+    "type": "task",
+    "title": "Душ",
+    "description": "",
+    "createdAt": 1792480840269,
+    "date": "2026-10-20",
+    "time": "",
+    "priority": "high",
+    "completed": false
+  },
+  {
+    "id": "1792480832612",
+    "type": "task",
+    "title": "Побриться",
+    "description": "",
+    "createdAt": 1792480832612,
+    "date": "2026-10-20",
+    "time": "",
+    "priority": "high",
     "completed": false
   },
   {
