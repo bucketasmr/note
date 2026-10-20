@@ -484,8 +484,8 @@
         // Загрузка из облака с добавлением случайного числа против кэша iOS
         async function loadFromCloud() {
             try {
-                // Добавлен Math.random() для полного сброса кэша Safari на iOS
-                const randomId = Math.random().toString(36.substring(7));
+                // Используем корректную прямую ссылку на сырой файл (raw)
+                const randomId = Math.random().toString(36).substring(7);
                 const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE_PATH}?t=` + Date.now() + `&r=` + randomId;
                 
                 const res = await fetch(url, { 
