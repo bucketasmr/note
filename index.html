@@ -189,13 +189,13 @@
                 <i class="fa-solid fa-gear"></i>
                 <span>Настройки</span>
             </button>
-            <button onclick="loadFromCloud()" title="Загрузить из облака" class="px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs sm:text-sm font-semibold rounded-lg shadow transition flex items-center justify-center space-x-1.5">
-                <i class="fa-solid fa-rotate"></i>
-                <span>Обновить из облака</span>
-            </button>
             <button id="saveCloudBtn" onclick="saveToCloud()" title="Сохранить в репозиторий GitHub" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm font-semibold rounded-lg shadow transition flex items-center justify-center space-x-1.5">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
-                <span id="saveCloudBtnText">Сохранить в облако</span>
+                <span id="saveCloudBtnText">Сохранить CLOUD</span>
+            </button>
+            <button onclick="loadFromCloud()" title="Загрузить из облака" class="px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs sm:text-sm font-semibold rounded-lg shadow transition flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-rotate"></i>
+                <span>Загрузить OLD CLOUD</span>
             </button>
         </div>
     </header>
@@ -383,7 +383,7 @@
         let currentFilter = 'all';
         let searchQuery = '';
         let currentTheme = 'dark';
-        let saveCooldownTimer = null; // Таймер ограничения сохранения
+        let saveCooldownTimer = null;
 
         const notebookContent = document.getElementById('notebookContent');
         const emptyState = document.getElementById('emptyState');
@@ -515,7 +515,7 @@
 
         // Сохранение в облако с защитным интервалом (40 секунд)
         async function saveToCloud() {
-            if (saveCloudBtn.disabled) return; // Защита от повторного клика
+            if (saveCloudBtn.disabled) return;
 
             const token = ghTokenInput.value.trim();
             if (!token) {
@@ -556,7 +556,7 @@
 
                 if (putRes.ok) {
                     showToast('Успешно сохранено в облако! 🚀');
-                    startCooldown(40); // Запускаем блокировку на 40 секунд
+                    startCooldown(40);
                 } else {
                     const err = await putRes.json();
                     alert('Ошибка GitHub API: ' + (err.message || 'Не удалось сохранить'));
@@ -580,12 +580,11 @@
                     clearInterval(saveCooldownTimer);
                     saveCloudBtn.disabled = false;
                     saveCloudBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    saveCloudBtnText.textContent = 'Сохранить в облако';
+                    saveCloudBtnText.textContent = 'Сохранить CLOUD';
                 }
             }, 1000);
         }
 
-        // Локальное обновление экрана и сохранение в память браузера
         function commitChanges() {
             localStorage.setItem('journal_entries', JSON.stringify(entries));
             renderEntries();
@@ -630,7 +629,6 @@
                 }
             });
 
-            // Ручное сохранение в файл (Бэкап)
             document.getElementById('exportBtn').addEventListener('click', () => {
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(entries, null, 2));
                 const a = document.createElement('a');
@@ -642,7 +640,6 @@
                 showToast('Файл бэкапа сохранен локально');
             });
 
-            // Ручная загрузка из файла
             document.getElementById('importInput').addEventListener('change', (e) => {
                 const reader = new FileReader();
                 reader.onload = function(evt) {
