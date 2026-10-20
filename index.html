@@ -258,7 +258,7 @@
     </main>
 
     <footer class="mb-4 text-center text-xs ui-text-muted">
-        <span>Синхронизация с репозиторием GitHub и локальные файлы.</span>
+        <span>Синхронизация с облаком GitHub и ручные бэкапы.</span>
     </footer>
 
     <!-- MODAL: Settings ⚙️ -->
@@ -294,7 +294,7 @@
 
                 <!-- Local Backup Section -->
                 <div class="pt-3 border-t border-amber-500/20">
-                    <label class="block text-xs font-bold uppercase tracking-wider mb-2 opacity-90">Локальный файл (Бэкап)</label>
+                    <label class="block text-xs font-bold uppercase tracking-wider mb-2 opacity-90">Локальный файл (Ручной Бэкап)</label>
                     <div class="grid grid-cols-2 gap-3">
                         <button type="button" id="exportBtn" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold rounded-lg shadow transition flex items-center justify-center space-x-1.5">
                             <i class="fa-solid fa-download text-amber-400"></i>
@@ -428,7 +428,7 @@
         function checkAuth() {
             if (sessionStorage.getItem('is_authenticated') === 'true') {
                 authModal.classList.add('hidden');
-                loadFromCloud();
+                loadFromCloud(); // Всегда берем свежие данные из облака при входе
             } else {
                 authModal.classList.remove('hidden');
             }
@@ -478,6 +478,7 @@
             }
         }
 
+        // Автоматическая загрузка строго из облака GitHub
         async function loadFromCloud() {
             try {
                 const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE_PATH}?t=` + Date.now();
@@ -491,34 +492,27 @@
                 });
                 if (res.ok) {
                     entries = await res.json();
-                    localStorage.setItem('journal_entries', JSON.stringify(entries));
+                    renderEntries();
                     showToast('Загружено из облака ☁️');
                 } else {
-                    loadEntriesLocal();
+                    showToast('Не удалось загрузить из облака');
                 }
             } catch (e) {
-                loadEntriesLocal();
+                showToast('Ошибка соединения с облаком');
             }
-            renderEntries();
         }
 
-        function loadEntriesLocal() {
-            const saved = localStorage.getItem('journal_entries');
-            entries = saved ? JSON.parse(saved) : [];
-        }
-
+        // Автоматическое сохранение строго в облако GitHub при изменениях
         async function saveToCloud() {
             const token = ghTokenInput.value.trim();
-            localStorage.setItem('gh_token', token);
-            localStorage.setItem('journal_entries', JSON.stringify(entries));
-
             if (!token) {
-                alert('Укажите GitHub Token в Настройках для сохранения в репозиторий!');
+                alert('Укажите GitHub Token в Настройках для сохранения в облако!');
                 openSettingsBtn.click();
                 return;
             }
+            localStorage.setItem('gh_token', token);
 
-            showToast('Сохранение в репозиторий... ⏳');
+            showToast('Сохранение в облако... ⏳');
             try {
                 const getRes = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE_PATH}`, {
                     headers: { "Authorization": `token ${token}` }
@@ -540,14 +534,14 @@
                         "Content-Type": "application/json" 
                     },
                     body: JSON.stringify({
-                        message: "Update journal entries via web app",
+                        message: "Auto update journal entries via web app",
                         content: contentEncoded,
                         sha: sha
                     })
                 });
 
                 if (putRes.ok) {
-                    showToast('Успешно сохранено в репозиторий! 🚀');
+                    showToast('Успешно сохранено в облако! 🚀');
                 } else {
                     const err = await putRes.json();
                     alert('Ошибка GitHub API: ' + (err.message || 'Не удалось сохранить'));
@@ -557,9 +551,10 @@
             }
         }
 
-        function saveEntries() {
-            localStorage.setItem('journal_entries', JSON.stringify(entries));
+        // Функция фиксации изменений (вызывает автосохранение в облако)
+        function commitChanges() {
             renderEntries();
+            saveToCloud(); // Автоматически отправляем в облако
         }
 
         function setupEventListeners() {
@@ -595,9 +590,13 @@
 
             searchInput.addEventListener('input', (e) => { searchQuery = e.target.value.toLowerCase().trim(); renderEntries(); });
             clearCompletedBtn.addEventListener('click', () => {
-                if (confirm('Удалить выполненные задачи?')) { entries = entries.filter(i => !(i.type === 'task' && i.completed)); saveEntries(); }
+                if (confirm('Удалить выполненные задачи?')) { 
+                    entries = entries.filter(i => !(i.type === 'task' && i.completed)); 
+                    commitChanges(); 
+                }
             });
 
+            // Ручное сохранение в файл (Бэкап)
             document.getElementById('exportBtn').addEventListener('click', () => {
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(entries, null, 2));
                 const a = document.createElement('a');
@@ -606,9 +605,10 @@
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
-                showToast('Файл сохранен локально');
+                showToast('Файл бэкапа сохранен локально');
             });
 
+            // Ручная загрузка из файла
             document.getElementById('importInput').addEventListener('change', (e) => {
                 const reader = new FileReader();
                 reader.onload = function(evt) {
@@ -616,7 +616,7 @@
                         const data = JSON.parse(evt.target.result);
                         if (Array.isArray(data)) {
                             entries = data;
-                            saveEntries();
+                            commitChanges();
                             showToast('Данные успешно загружены из файла');
                             settingsModal.classList.add('hidden');
                         }
@@ -683,18 +683,24 @@
             if (existingIndex >= 0) entries[existingIndex] = newEntry;
             else entries.unshift(newEntry);
 
-            saveEntries();
             closeModal();
-            showToast('Сохранено');
+            commitChanges(); // Сохраняем в облако
         }
 
         function toggleTaskComplete(id) {
             const item = entries.find(e => e.id === id);
-            if (item) { item.completed = !item.completed; saveEntries(); }
+            if (item) { 
+                item.completed = !item.completed; 
+                commitChanges(); // Сохраняем в облако
+            }
         }
 
         function deleteEntry(id) {
-            if (confirm('Удалить запись?')) { entries = entries.filter(e => e.id !== id); saveEntries(); showToast('Удалено'); }
+            if (confirm('Удалить запись?')) { 
+                entries = entries.filter(e => e.id !== id); 
+                commitChanges(); // Сохраняем в облако
+                showToast('Удалено'); 
+            }
         }
 
         function renderEntries() {
